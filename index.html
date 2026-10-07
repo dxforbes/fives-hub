@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fives Hub">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Fives Hub</title>
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<style>
+/* Layout: one phone-width column under a frosted top bar that holds the Player / Venue switch.
+   Look: iOS-style grouped surfaces on a soft grey ground, large rounded cards, pill chips and buttons,
+   system font (San Francisco on Apple devices), turf-green accent, amber for held slots. */
+:root{
+  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#111113; --muted:#6C6C72; --line:rgba(60,60,67,.18);
+  --fill:#ECECF0; --cell:#E4E4EA; --seg-on:#FFFFFF;
+  --accent:#248A3D; --accent-ink:#FFFFFF; --accent-soft:#E2F4E7;
+  --amber:#8A5A00; --amber-soft:#FFF1CF; --warn:#D70015;
+  --bar:rgba(242,242,247,.78); --toast:rgba(28,28,30,.92); --toast-ink:#FFFFFF;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue","Segoe UI",Roboto,sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --surface:#1C1C1E; --ink:#F5F5F7; --muted:#9A9AA1; --line:rgba(84,84,88,.55);
+    --fill:#2C2C2E; --cell:#2C2C2E; --seg-on:#636366;
+    --accent:#30D158; --accent-ink:#04200C; --accent-soft:#12361E;
+    --amber:#FFD60A; --amber-soft:#3A3000; --warn:#FF6961;
+    --bar:rgba(0,0,0,.7); --toast:rgba(72,72,74,.95); --toast-ink:#FFFFFF; --shadow:none; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#1C1C1E; --ink:#F5F5F7; --muted:#9A9AA1; --line:rgba(84,84,88,.55);
+  --fill:#2C2C2E; --cell:#2C2C2E; --seg-on:#636366;
+  --accent:#30D158; --accent-ink:#04200C; --accent-soft:#12361E;
+  --amber:#FFD60A; --amber-soft:#3A3000; --warn:#FF6961;
+  --bar:rgba(0,0,0,.7); --toast:rgba(72,72,74,.95); --toast-ink:#FFFFFF; --shadow:none; color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;transition:transform .18s cubic-bezier(.2,.9,.3,1.2),background-color .2s,opacity .2s}
+button:active:not(:disabled){transform:scale(.97)}
+input{font:inherit;color:inherit}
+.app{max-width:440px;margin-inline:auto;padding-inline:16px;padding-block:0 44px;display:flex;flex-direction:column;gap:20px}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-inline:-16px;padding:10px 16px 10px;display:flex;flex-direction:column;gap:10px;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);border-bottom:.5px solid var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-.02em;line-height:1}
+.brand span{color:var(--accent)}
+.pill{font-size:12.5px;font-weight:600;background:var(--amber-soft);color:var(--amber);padding:4px 11px;border-radius:99px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--fill);border-radius:11px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;padding:8px 10px;border-radius:9px;font-weight:600;font-size:14.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--seg-on);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14),0 1px 1px rgba(0,0,0,.06)}
+h1,h2,h3{font-family:var(--font-display);margin:0;line-height:1.08;text-wrap:balance}
+h1{font-size:34px;font-weight:700;letter-spacing:-.025em}
+h2{font-size:27px;font-weight:700;letter-spacing:-.022em}
+h3{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:0;background:var(--fill);border-radius:99px;padding:9px 16px;font-weight:500;font-size:15px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:0;border-radius:22px;padding:16px;text-align:left;width:100%;min-width:0;box-shadow:var(--shadow)}
+button.card:active{transform:scale(.985)}
+.vhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.vname{font-family:var(--font-display);font-size:20px;font-weight:650;letter-spacing:-.018em;line-height:1.15;min-width:0;overflow-wrap:anywhere}
+.price{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.price small{font-size:14px;color:var(--muted);font-weight:500}
+.meta{color:var(--muted);font-size:14.5px;margin-top:3px}
+.free{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.tag{font-size:13px;font-weight:600;background:var(--accent-soft);color:var(--accent);padding:4px 11px;border-radius:99px}
+.tag.amber{background:var(--amber-soft);color:var(--amber)}
+.back{border:0;background:none;color:var(--accent);font-weight:500;font-size:17px;padding:6px 0;align-self:flex-start}
+.days{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:-2px -2px 0}
+.day{flex:0 0 auto;border:0;background:var(--surface);border-radius:18px;padding:10px 14px;text-align:center;min-width:64px;box-shadow:var(--shadow)}
+.day b{display:block;font-family:var(--font-display);font-size:21px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.day span{font-size:12.5px;color:var(--muted)}
+.day[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.day[aria-pressed="true"] span{color:var(--accent-ink);opacity:.85}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot{border:0;background:var(--surface);border-radius:16px;padding:10px 4px;text-align:center;box-shadow:var(--shadow)}
+.slot b{display:block;font-family:var(--font-display);font-size:17px;font-weight:650;letter-spacing:-.01em;line-height:1.15;font-variant-numeric:tabular-nums}
+.slot span{font-size:12.5px;color:var(--muted)}
+.slot[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.slot[aria-pressed="true"] span{color:var(--accent-ink);opacity:.85}
+.slot:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:18px;padding:16px 18px;font-weight:600;font-size:17px;width:100%}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:10px 12px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.kv .total{font-family:var(--font-display);font-size:24px;font-weight:700;letter-spacing:-.02em}
+.bar{height:10px;border-radius:99px;background:var(--fill);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s cubic-bezier(.2,.9,.3,1)}
+.bar.amber i{background:var(--amber)}
+.players{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pl{display:flex;justify-content:space-between;gap:6px;padding:9px 12px;border-radius:14px;background:var(--fill);font-size:14.5px;min-width:0}
+.pl.paid{background:var(--accent-soft);color:var(--accent)}
+.pl b{font-weight:600}
+.linkbox{display:flex;gap:8px}
+.linkbox input{flex:1;min-width:0;border:0;background:var(--surface);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.linkbox button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:0 20px;font-weight:600}
+.wa{background:#DCF8C6;color:#111113;border-radius:20px 20px 20px 6px;padding:12px 14px;font-size:15px}
+:root[data-theme="dark"] .wa{background:#1F3B2C;color:#F5F5F7}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .wa{background:#1F3B2C;color:#F5F5F7}}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surface);border-radius:22px;padding:14px 16px;box-shadow:var(--shadow)}
+.tile b{display:block;font-family:var(--font-display);font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.05;font-variant-numeric:tabular-nums}
+.tile span{font-size:13.5px;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13.5px;font-weight:500;color:var(--muted)}
+.field input{border:0;background:var(--surface);border-radius:14px;padding:13px 14px;font-size:17px;font-weight:500;box-shadow:var(--shadow)}
+.gridwrap{overflow-x:auto;border-radius:22px;background:var(--surface);box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:52px repeat(var(--cols),minmax(48px,1fr));min-width:max-content;gap:5px;padding:12px}
+.gh{font-weight:600;color:var(--muted);text-align:center;font-size:13.5px}
+.gt{font-weight:600;color:var(--muted);font-size:13.5px;display:flex;align-items:center;font-variant-numeric:tabular-nums}
+.cell{border:1px solid var(--line);background:transparent;border-radius:10px;height:36px;font-size:12px;font-weight:600;color:var(--muted);padding:0}
+.cell.b{background:var(--cell);border-color:transparent;color:var(--ink)}
+.cell.app{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.cell.held{background:var(--amber-soft);border-color:transparent;color:var(--amber)}
+.cell.past{opacity:.35}
+.cell.sel{outline:3px solid var(--accent);outline-offset:1px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.cmp{display:flex;flex-direction:column;gap:14px}
+.cmp div.l{display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:6px;gap:8px}
+.cmp b{font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--toast);color:var(--toast-ink);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);padding:11px 18px;border-radius:99px;font-weight:600;font-size:14.5px;max-width:calc(100% - 32px);z-index:10}
+.note{font-size:13.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="nav">
+    <div class="top">
+      <div class="brand">Fives <span>Hub</span></div>
+      <span class="pill">Sample data</span>
+    </div>
+    <div class="seg" role="group" aria-label="Choose view" id="seg"></div>
+  </header>
+  <main id="main" class="stack" style="gap:20px"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+const VENUES = [
+  {id:0,name:'Southside Fives',area:'Claremont',km:3.2,courts:6,type:'Outdoor',surface:'3G turf',price:750,load:0.7},
+  {id:1,name:'Harbour Indoor Arena',area:'Woodstock',km:5.8,courts:4,type:'Indoor',surface:'Hard court',price:800,load:1.0},
+  {id:2,name:'Northgate Soccer Park',area:'Durbanville',km:14.1,courts:8,type:'Outdoor',surface:'3G turf',price:650,load:0.85},
+  {id:3,name:'Bellville Five-a-side',area:'Bellville',km:12.4,courts:5,type:'Indoor',surface:'Synthetic',price:700,load:0.6}
+];
+const NAMES = ['Tuesday Regulars','Office League FC','Late Kickers','Friday Crew','Uni Mates','Dads United','Sunset FC','The Wednesday Lot','Shift Workers XI','Run-around Boys'];
+const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+const DAYS = Array.from({length:5},(_, i)=>{const d=new Date(); d.setDate(d.getDate()+i); return d;});
+const B = {};
+const S = {mode:'player',screen:'discover',filter:'all',v:0,di:0,hr:null,court:null,n:10,bk:null,vdi:0,vsel:null,vsrc:'WhatsApp',venueName:VENUES[0].name};
+
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rand = n => 'R'+Number(n).toLocaleString('en-ZA');
+const hh = h => String(h).padStart(2,'0')+':00';
+const dayLabel = (d,i) => i===0?'Today':i===1?'Tomorrow':d.toLocaleDateString('en-ZA',{weekday:'short'});
+const dateLong = d => d.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'});
+function hash(str){let x=2166136261;for(let i=0;i<str.length;i++){x^=str.charCodeAt(i);x=Math.imul(x,16777619);}return (x>>>0)/4294967296;}
+const isPast = (di,hr) => di===0 && hr<=new Date().getHours();
+
+function slot(v,di,c,hr){
+  const k=v+'|'+di+'|'+c+'|'+hr;
+  if(B[k]) return B[k];
+  const p=(hr>=18&&hr<=20?0.88:hr===21?0.5:hr>=12&&hr<=16?0.12:hr===17?0.5:0.2)*VENUES[v].load;
+  if(hash(k)<p){
+    const r=hash(k+'s');
+    return {status:'booked',source:r<0.55?'WhatsApp':r<0.8?'Walk-in':'Phone',name:NAMES[Math.floor(hash(k+'n')*NAMES.length)]};
+  }
+  return null;
+}
+function freeCourts(v,di,hr){
+  const out=[];
+  for(let c=1;c<=VENUES[v].courts;c++){ if(!slot(v,di,c,hr)) out.push(c); }
+  return out;
+}
+function freeToday(v){
+  let n=0,next=null;
+  for(const hr of HOURS){ if(isPast(0,hr)) continue; const f=freeCourts(v,0,hr).length; n+=f; if(f&&next===null) next=hr; }
+  return {n,next};
+}
+const key = (v,di,c,hr) => v+'|'+di+'|'+c+'|'+hr;
+
+/* ---------- render ---------- */
+function render(){
+  document.getElementById('seg').innerHTML =
+    `<button data-a="mode" data-m="player" aria-pressed="${S.mode==='player'}">Player view</button>`+
+    `<button data-a="mode" data-m="venue" aria-pressed="${S.mode==='venue'}">Venue view</button>`;
+  document.getElementById('main').innerHTML = S.mode==='player' ? player() : venueView();
+}
+
+function player(){
+  if(S.screen==='discover') return discover();
+  if(S.screen==='venue') return detail();
+  if(S.screen==='summary') return summary();
+  return share();
+}
+
+function discover(){
+  const f=S.filter;
+  const list=VENUES.filter(v=>f==='all'||(f==='Indoor'&&v.type==='Indoor')||(f==='Outdoor'&&v.type==='Outdoor')||(f==='cheap'&&v.price<=700));
+  const chips=[['all','All venues'],['Indoor','Indoor'],['Outdoor','Outdoor'],['cheap','R700 or less']]
+    .map(([k,l])=>`<button class="chip" data-a="filter" data-f="${k}" aria-pressed="${f===k}">${l}</button>`).join('');
+  const cards=list.map(v=>{
+    const t=freeToday(v.id);
+    const name=v.id===0?S.venueName:v.name;
+    return `<button class="card" data-a="open" data-id="${v.id}">
+      <div class="vhead"><div class="vname">${esc(name)}</div><div class="price">${rand(v.price)}<small> /hr</small></div></div>
+      <div class="meta">${esc(v.area)} · ${v.km} km · ${v.courts} courts · ${v.type}, ${esc(v.surface)}</div>
+      <div class="free"><span class="tag">${t.n} court-hours free today</span>${t.next!==null?`<span class="tag amber">Next free ${hh(t.next)}</span>`:''}</div>
+    </button>`;}).join('');
+  return `<div class="stack"><h1>Find a game</h1><p class="sub">Every five-a-side venue near you, with live availability.</p></div>
+    <div class="row">${chips}</div>
+    <div class="stack">${cards||'<p class="sub">No venues match this filter.</p>'}</div>`;
+}
+
+function detail(){
+  const V=VENUES[S.v], name=S.v===0?S.venueName:V.name;
+  const days=DAYS.map((d,i)=>`<button class="day" data-a="day" data-i="${i}" aria-pressed="${S.di===i}"><b>${d.getDate()}</b><span>${dayLabel(d,i)}</span></button>`).join('');
+  const slots=HOURS.map(hr=>{
+    const f=freeCourts(S.v,S.di,hr).length, past=isPast(S.di,hr);
+    return `<button class="slot" data-a="hr" data-h="${hr}" aria-pressed="${S.hr===hr}" ${(!f||past)?'disabled':''}><b>${hh(hr)}</b><span>${past?'past':f?f+' free':'full'}</span></button>`;}).join('');
+  let courts='';
+  if(S.hr!==null){
+    courts=`<div class="stack"><h3>Pick a court</h3><div class="row">`+
+      freeCourts(S.v,S.di,S.hr).map(c=>`<button class="chip" data-a="court" data-c="${c}" aria-pressed="${S.court===c}">Court ${c}</button>`).join('')+`</div></div>`;
+  }
+  return `<button class="back" data-a="back">← All venues</button>
+    <div class="stack"><h2>${esc(name)}</h2><p class="meta" style="margin:0">${esc(V.area)} · ${V.courts} courts · ${V.type}, ${esc(V.surface)} · ${rand(V.price)}/hr per court</p></div>
+    <div class="stack"><h3>Date</h3><div class="days">${days}</div></div>
+    <div class="stack"><h3>Start time</h3><div class="slots">${slots}</div></div>
+    ${courts}
+    <button class="btn" data-a="cont" ${S.court===null?'disabled':''}>Continue</button>`;
+}
+
+function summary(){
+  const V=VENUES[S.v], name=S.v===0?S.venueName:V.name, fee=5, per=Math.ceil(V.price/S.n);
+  const chips=[8,10,12].map(n=>`<button class="chip" data-a="n" data-n="${n}" aria-pressed="${S.n===n}">${n} players</button>`).join('');
+  return `<button class="back" data-a="vback">← Change slot</button>
+    <div class="stack"><h2>Your booking</h2>
+      <div class="card"><div class="vname">${esc(name)}</div>
+        <div class="meta">${dateLong(DAYS[S.di])} · ${hh(S.hr)}–${hh(S.hr+1)} · Court ${S.court}</div></div></div>
+    <div class="stack"><h3>Split the cost</h3><div class="row">${chips}</div></div>
+    <div class="card"><dl class="kv">
+      <dt>Court hire</dt><dd>${rand(V.price)}</dd>
+      <dt>Each player's share</dt><dd>${rand(per)}</dd>
+      <dt>Service fee per player</dt><dd>${rand(fee)}</dd>
+      <dt>Each player pays</dt><dd class="total">${rand(per+fee)}</dd>
+    </dl></div>
+    <p class="note">You pay your share now. Everyone else gets a link to pay theirs. The slot is held until 2 hours before kick-off; if shares are missing then, you cover the gap or the slot goes back on sale.</p>
+    <button class="btn" data-a="book">Book and get payment link</button>`;
+}
+
+function share(){
+  const bk=S.bk, V=VENUES[bk.v], name=bk.v===0?S.venueName:V.name, done=bk.paid>=bk.n;
+  const pl=Array.from({length:bk.n},(_,i)=>{const p=i<bk.paid;return `<div class="pl ${p?'paid':''}"><span>${i===0?'You':'Player '+(i+1)}</span><b>${p?'Paid':'Waiting'}</b></div>`;}).join('');
+  const msg=done?`<div class="stack"><h3>WhatsApp sent to the group and the venue</h3>
+    <div class="wa">✅ Booking confirmed<br>${esc(name)}, Court ${bk.c}<br>${dateLong(DAYS[bk.di])}, ${hh(bk.hr)}<br>${bk.n}/${bk.n} paid. See you on the pitch.</div></div>`:'';
+  return `<div class="stack"><h2>${done?'Game confirmed':'Slot held'}</h2>
+    <p class="sub">${esc(name)} · Court ${bk.c} · ${dateLong(DAYS[bk.di])} · ${hh(bk.hr)}</p></div>
+    <div class="card stack">
+      <div class="vhead"><b>${bk.paid} of ${bk.n} paid</b><span class="tag ${done?'':'amber'}">${done?'Confirmed':'Waiting for '+(bk.n-bk.paid)}</span></div>
+      <div class="bar ${done?'':'amber'}"><i style="width:${Math.round(bk.paid/bk.n*100)}%"></i></div>
+      <div class="players">${pl}</div></div>
+    ${done?'':`<div class="stack"><h3>Send this to your group</h3>
+      <div class="linkbox"><input id="lnk" readonly value="https://fives.example/pay/${bk.code}" aria-label="Payment link"><button data-a="copy">Copy</button></div>
+      <p class="note">Demo link. Each player taps it and pays ${rand(bk.per+5)} by card or EFT.</p></div>`}
+    ${msg}
+    ${done?'':`<button class="btn ghost" data-a="pay">Demo control: next player pays</button>`}
+    <button class="btn ${done?'':'ghost'}" data-a="reset">Back to venues</button>`;
+}
+
+function venueView(){
+  const V=VENUES[0], di=S.vdi;
+  const days=DAYS.slice(0,3).map((d,i)=>`<button class="day" data-a="vday" data-i="${i}" aria-pressed="${di===i}"><b>${d.getDate()}</b><span>${dayLabel(d,i)}</span></button>`).join('');
+  let booked=0,total=0,aft=0,aftT=0,eve=0,eveT=0;
+  for(const hr of HOURS){ for(let c=1;c<=V.courts;c++){ const b=!!slot(0,di,c,hr); total++; if(b) booked++;
+    if(hr>=12&&hr<=16){aftT++; if(b) aft++;} if(hr>=18&&hr<=20){eveT++; if(b) eve++;} } }
+  let appN=0,collected=0;
+  Object.values(B).forEach(b=>{ if(b.source==='App'){appN++; collected+=b.bk.paid*b.bk.per;} });
+  const pct=(a,b)=>b?Math.round(a/b*100):0;
+  let g=`<div class="gridwrap"><div class="grid" style="--cols:${V.courts}"><div></div>`;
+  for(let c=1;c<=V.courts;c++) g+=`<div class="gh">C${c}</div>`;
+  for(const hr of HOURS){
+    g+=`<div class="gt">${hh(hr)}</div>`;
+    for(let c=1;c<=V.courts;c++){
+      const s=slot(0,di,c,hr), past=isPast(di,hr), sel=S.vsel&&S.vsel.c===c&&S.vsel.hr===hr;
+      let cls='cell', t='+';
+      if(s){ if(s.source==='App'){cls+=s.status==='held'?' held':' app'; t=s.status==='held'?'Held':'App';} else {cls+=' b'; t=s.source==='WhatsApp'?'WA':s.source==='Phone'?'Tel':'Walk';} }
+      if(past) cls+=' past'; if(sel) cls+=' sel';
+      g+=`<button class="${cls}" data-a="vcell" data-c="${c}" data-h="${hr}" aria-label="Court ${c} ${hh(hr)}">${t}</button>`;
+    }
+  }
+  g+='</div></div>';
+  let panel='';
+  if(S.vsel){
+    const {c,hr}=S.vsel, s=slot(0,di,c,hr);
+    if(s){
+      panel=`<div class="card stack"><h3>Court ${c} · ${hh(hr)}</h3>
+        <dl class="kv"><dt>Booked by</dt><dd>${esc(s.name)}</dd><dt>Came in via</dt><dd>${esc(s.source==='App'?'Fives Hub':s.source)}</dd>
+        ${s.bk?`<dt>Players paid</dt><dd>${s.bk.paid} of ${s.bk.n}</dd><dt>Status</dt><dd>${s.status==='held'?'Held, waiting for payments':'Confirmed'}</dd>`:''}</dl></div>`;
+    } else if(!isPast(di,hr)){
+      const srcs=['WhatsApp','Phone','Walk-in'].map(x=>`<button class="chip" data-a="src" data-s="${x}" aria-pressed="${S.vsrc===x}">${x}</button>`).join('');
+      panel=`<div class="card stack"><h3>Add a booking · Court ${c} · ${hh(hr)}</h3>
+        <p class="note" style="margin:0">Staff enter WhatsApp, phone and walk-in bookings here too, so every booking lives in one calendar and nothing gets double-booked.</p>
+        <div class="row">${srcs}</div>
+        <div class="field"><label for="bname">Name</label><input id="bname" value="" placeholder="e.g. Thabo, 10 players"></div>
+        <button class="btn" data-a="add">Add to calendar</button></div>`;
+    }
+  }
+  return `<div class="stack"><h1>Venue dashboard</h1>
+    <div class="field"><label for="vn">Venue name</label><input id="vn" value="${esc(S.venueName)}" maxlength="40" autocomplete="off"></div>
+    <p class="note" style="margin:0">Type your own venue's name; the player view updates to match.</p></div>
+    <div class="days">${days}</div>
+    <div class="tiles">
+      <div class="tile"><b>${pct(booked,total)}%</b><span>Courts booked, ${dayLabel(DAYS[di],di).toLowerCase()}</span></div>
+      <div class="tile"><b>${total-booked}</b><span>Empty court-hours</span></div>
+      <div class="tile"><b>${appN}</b><span>Bookings from the app</span></div>
+      <div class="tile"><b>${rand(collected)}</b><span>Collected through the app</span></div>
+    </div>
+    <div class="card cmp"><h3>Where the empty slots are</h3>
+      <div><div class="l"><span>Afternoons 12:00–17:00</span><b>${pct(aft,aftT)}% booked</b></div><div class="bar amber"><i style="width:${pct(aft,aftT)}%"></i></div></div>
+      <div><div class="l"><span>Evenings 18:00–21:00</span><b>${pct(eve,eveT)}% booked</b></div><div class="bar"><i style="width:${pct(eve,eveT)}%"></i></div></div>
+    </div>
+    <div class="stack"><h3>Court calendar</h3>${g}
+      <div class="legend"><span><i style="background:var(--accent)"></i>Fives Hub</span><span><i style="background:var(--amber-soft);border:1px solid var(--amber)"></i>Held</span><span><i style="background:var(--cell)"></i>WhatsApp, phone, walk-in</span><span><i style="border:1px dashed var(--line)"></i>Empty</span></div>
+      <p class="note" style="margin:0">Tap any block. Book a slot in Player view and watch it appear here.</p></div>
+    ${panel}`;
+}
+
+/* ---------- actions ---------- */
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{el.hidden=true;},2200);}
+function go(){render();window.scrollTo(0,0);}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-a]'); if(!t) return;
+  const a=t.dataset.a, d=t.dataset;
+  if(a==='mode'){S.mode=d.m;go();}
+  else if(a==='filter'){S.filter=d.f;render();}
+  else if(a==='open'){S.v=+d.id;S.screen='venue';S.di=0;S.hr=null;S.court=null;go();}
+  else if(a==='back'){S.screen='discover';go();}
+  else if(a==='day'){S.di=+d.i;S.hr=null;S.court=null;render();}
+  else if(a==='hr'){S.hr=+d.h;S.court=null;render();}
+  else if(a==='court'){S.court=+d.c;render();}
+  else if(a==='cont'){S.screen='summary';go();}
+  else if(a==='vback'){S.screen='venue';go();}
+  else if(a==='n'){S.n=+d.n;render();}
+  else if(a==='book'){
+    const V=VENUES[S.v], per=Math.ceil(V.price/S.n);
+    const code=Math.random().toString(36).slice(2,6).toUpperCase();
+    S.bk={v:S.v,di:S.di,c:S.court,hr:S.hr,n:S.n,per,paid:1,code};
+    B[key(S.v,S.di,S.court,S.hr)]={status:'held',source:'App',name:'You (organiser)',bk:S.bk};
+    S.screen='share';go();
+  }
+  else if(a==='pay'){
+    const bk=S.bk; if(bk.paid<bk.n) bk.paid++;
+    if(bk.paid>=bk.n) B[key(bk.v,bk.di,bk.c,bk.hr)].status='confirmed';
+    render();
+  }
+  else if(a==='copy'){
+    const inp=document.getElementById('lnk');
+    const fallback=()=>{inp.focus();inp.select();toast('Select and copy the link');};
+    try{ navigator.clipboard.writeText(inp.value).then(()=>toast('Link copied'),fallback); }catch(err){fallback();}
+  }
+  else if(a==='reset'){S.screen='discover';S.hr=null;S.court=null;S.bk=null;go();}
+  else if(a==='vday'){S.vdi=+d.i;S.vsel=null;render();}
+  else if(a==='vcell'){S.vsel={c:+d.c,hr:+d.h};render();}
+  else if(a==='src'){S.vsrc=d.s;render();}
+  else if(a==='add'){
+    const nm=(document.getElementById('bname').value||'').trim()||'Walk-up booking';
+    const {c,hr}=S.vsel;
+    B[key(0,S.vdi,c,hr)]={status:'booked',source:S.vsrc,name:nm};
+    toast('Added to the calendar'); render();
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='vn'){ S.venueName=e.target.value.trim()||VENUES[0].name; }
+});
+render();
+</script>
+</body>
+</html>
